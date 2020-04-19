@@ -1,5 +1,6 @@
 const fs = require('fs');
 const path = require('path');
+const template = require('./template.js');
 
 // init
 const fastify = require('fastify')({
@@ -7,53 +8,37 @@ const fastify = require('fastify')({
 	logger: true
 });
 
+fastify.register(require('fastify-compress'));
+
 fastify.register(require('fastify-static'), {
-	root: path.join(__dirname, 'public'),
-	prefix: '/public/'
+	root: path.join(__dirname, 'public')
 });
 
 fastify.route({
 	method: 'GET',
 	url: '/',
 	handler: (request, reply) => {
+		reply.header('Content-Type', 'text/html');
+		reply.send(template('Home', {
+			dateString: (new Date()).toString() + ' Server-side rendered!'
+		}));
+	}
+});
 
-		const props = {
+fastify.route({
+	method: 'GET',
+	url: '/fruits',
+	handler: (request, reply) => {
+		reply.header('Content-Type', 'text/html');
+		reply.send(template('Fruits', {
 			fruits: [
 				{name: 'Mango'},
 				{name: 'Apple'},
 				{name: 'Banana'}
 			]
-		};
-
-		const {render} = require('./ssr/Fruits.js');
-		const {html, css, head } = render(props);
-
-		reply.headers({
-			'Content-Type': 'text/html'
-		});
-
-		reply.send(`
-			<html>
-				<head>
-					<style>${css.code}</style>
-					${head}
-					<script type='module'>
-						import Fruits from '/public/Fruits.js';
-
-						new Fruits({
-							target: document.body,
-							hydrate: true,
-							props: ${JSON.stringify(props)}
-						});
-					</script>
-				</head>
-				<body>
-					${html}
-				</body>
-			</html>
-		`)
+		}));
 	}
-})
+});
 
 fastify.listen('8888', function (err, address) {
 	if (err) {

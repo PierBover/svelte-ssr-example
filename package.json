@@ -4,8 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "build-client": "rollup -c",
-    "start": "node server/index.js"
+    "build-svelte": "rollup -c",
+    "start": "npm run build-svelte && node server/index.js"
   },
   "repository": {
     "type": "git",
@@ -21,9 +21,12 @@
   "dependencies": {
     "@rollup/plugin-node-resolve": "^7.1.3",
     "fastify": "^2.13.1",
+    "fastify-compress": "^2.0.1",
     "fastify-static": "^2.6.0",
+    "rimraf": "^3.0.2",
     "rollup": "^2.6.1",
     "rollup-plugin-svelte": "^5.2.1",
+    "rollup-plugin-terser": "^5.3.0",
     "svelte": "^3.20.1"
   }
 }
