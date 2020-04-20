@@ -1,10 +1,11 @@
-import path from 'path';
-import fs from 'fs';
+const path = require('path');
+const fs = require('fs');
 
-import rimraf from 'rimraf';
-import svelte from 'rollup-plugin-svelte';
-import resolve from '@rollup/plugin-node-resolve';
-import {terser} from 'rollup-plugin-terser';
+const rimraf = require('rimraf');
+const svelte = require('rollup-plugin-svelte');
+const resolve = require('@rollup/plugin-node-resolve');
+const {terser} = require('rollup-plugin-terser');
+const del = require('rollup-plugin-delete');
 
 const rollupConfigs = [];
 
@@ -77,10 +78,15 @@ pagesFiles.forEach((filename) => {
 				browser: true,
 				dedupe: ['svelte']
 			}),
-			terser()
+			terser(),
+			// We need to delete the previous file, otherwise we will end up with multiple
+			// files with different hashes on dev time with rollup watch
+			del({
+				targets: path.join(clientDir, componentName + '*')
+			})
 		]
 	});
 });
 
 
-export default rollupConfigs;
+module.exports = rollupConfigs;

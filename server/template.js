@@ -5,12 +5,18 @@ const fs = require('fs');
 // eg: public/js/pages/Home.8f58e2d9.js
 // We need to figure out its filenames beforehand
 
+const jsPagesDir = path.resolve(__dirname, 'public/js/pages');
 const pagesComponents = {};
 
-fs.readdirSync(path.resolve(__dirname, 'public/js/pages')).forEach((filename) => {
-	const componentName = filename.split('---')[0];
-	pagesComponents[componentName] = filename;
-});
+// When doing dev the first time the directory might not exist yet so we prevent an error
+// This will not happen when doing "npm run start"
+
+if (fs.existsSync(jsPagesDir)) {
+	fs.readdirSync(jsPagesDir).forEach((filename) => {
+		const componentName = filename.split('---')[0];
+		pagesComponents[componentName] = filename;
+	});
+}
 
 
 module.exports = (page, data) => {

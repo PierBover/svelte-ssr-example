@@ -11,6 +11,15 @@ I was looking for an SSR example for Svelte but the only [one I could find](http
 
 I'm a Rollup and Svelte noob. Don't hesitate to open an issue if I did something wrong.
 
+### How to dev?
+Run `npm run rollup-watch` and then on another terminal tab `npm run server-watch`. This is not very elegant but it's better than manually doing `npm run start` whenever you want to refresh a change...
+
+You could also create a new NPM command on `package.json` like this:
+```
+"dev": "npm run rollup-watch & npm run server-watch"
+```
+This would run those commands at the same time in parallel (note the single `&`). When you do `npm run dev` you will see lots of garbage messages because Nodemon will restart the server whenever Rollup bundles a new file.
+
 ### Why not Sapper?
 
 Sapper apps respond the first request by doing SSR but after that it becomes a single-page-application (SPA) with code splitting. This is fancy but introduces a number of issues:
