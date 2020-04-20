@@ -1,6 +1,6 @@
 <script>
 	import {onMount} from 'svelte';
-	import Menu from '../components/Menu.svelte';
+	import Menu from '../Menu.svelte';
 	export let dateString;
 
 	onMount(() => {

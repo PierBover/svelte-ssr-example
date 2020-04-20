@@ -4,7 +4,9 @@ Features:
 * Svelte 3
 * SSR with hydration client-side
 * Isomorphic (use the same components server-side and client-side)
-* Hashed filenames
+* Hashed JS and CSS filenames
+* Global SCSS
+* Component SCSS (use `<style lang="scss">`)
 * Using Fastify but any Node server can be used
 
 I was looking for an SSR example for Svelte but the only [one I could find](https://github.com/domingues/svelte-ssr-example) seemed unnecessarily complicated. So I decided to create this example which I think is more educational.
@@ -12,13 +14,15 @@ I was looking for an SSR example for Svelte but the only [one I could find](http
 I'm a Rollup and Svelte noob. Don't hesitate to open an issue if I did something wrong.
 
 ### How to dev?
-Run `npm run rollup-watch` and then on another terminal tab `npm run server-watch`. If you add a new file to `client/pages` you will need to restart Rollup's watch. I haven't found a way of having a config array and have it react on new file changes. This is not very elegant but it's better than manually doing `npm run start` whenever you want to refresh a change.
+Run `npm run rollup-watch` and then `npm run server-watch` on another shell and then `npm run scss-watch` on another shell. This is not very elegant but it's better than manually doing `npm run start` whenever you want to refresh a change.
 
-Instead of having two terminal tabs you could create a new NPM command on `package.json` like this:
+If you add a new file to `components/pages` you will need to restart Rollup's watch. I haven't found a way of making Rollup react to new files when using an array of configs. If you know how please answer this [StackOverflow question](https://stackoverflow.com/questions/61316722/how-watch-for-new-files-in-rollup-with-an-array-of-configs)!
+
+Instead of having three terminal tabs you could create a new NPM command on `package.json` like this:
 ```
-"dev": "npm run rollup-watch & npm run server-watch"
+"dev": "npm run rollup-watch & npm run scss-watch & npm run server-watch"
 ```
-This would run those commands at the same time in parallel (note the single `&`). When you do `npm run dev` you will see lots of garbage messages because Nodemon will restart the server whenever Rollup bundles all pages.
+This would run those commands at the same time in parallel (note the single `&`) but all outputs will be mixed.
 
 ### Why not Sapper?
 

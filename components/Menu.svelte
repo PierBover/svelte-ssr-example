@@ -3,12 +3,12 @@
 	<a href="/fruits">Fruits</a>
 </div>
 
-<style>
+<style lang="scss">
 	.Menu {
 		display: flex;
-	}
 
-	a {
-		margin-right: 1rem;
+		a {
+			margin-right: 1rem;
+		}
 	}
 </style>
