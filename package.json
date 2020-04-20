@@ -7,7 +7,7 @@
     "rollup-build": "rollup -c",
     "rollup-watch": "rollup -c -w",
     "start": "npm run rollup-build && node server/index.js",
-    "server-watch": "nodemon server/index.js"
+    "server-watch": "DEV=true nodemon server/index.js"
   },
   "repository": {
     "type": "git",
@@ -35,7 +35,9 @@
   },
   "nodemonConfig": {
     "ignore": [
-      "client/*"
+      "client/*",
+      "server/ssr/*",
+      "server/public/*"
     ],
     "delay": "100"
   }

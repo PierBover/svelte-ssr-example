@@ -2,6 +2,11 @@ const fs = require('fs');
 const path = require('path');
 const template = require('./template.js');
 
+const dev = process.env.DEV === 'true';
+
+console.log('Starting server!');
+console.log('Dev mode: ', dev);
+
 // init
 const fastify = require('fastify')({
 	ignoreTrailingSlash: true,

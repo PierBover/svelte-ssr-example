@@ -1,21 +1,24 @@
 const path = require('path');
 const fs = require('fs');
 
-// Since our components have hashes in their filenames
-// eg: public/js/pages/Home.8f58e2d9.js
-// We need to figure out its filenames beforehand
+const dev = process.env.DEV === 'true';
 
 const jsPagesDir = path.resolve(__dirname, 'public/js/pages');
-const pagesComponents = {};
 
-// When doing dev the first time the directory might not exist yet so we prevent an error
-// This will not happen when doing "npm run start"
+// Since our components have hashes in their filenames
+// eg: public/js/pages/Home.8f58e2d9.js
+// We need to figure out its filenames beforehand when running the server
+// and load them to memory
 
-if (fs.existsSync(jsPagesDir)) {
-	fs.readdirSync(jsPagesDir).forEach((filename) => {
-		const componentName = filename.split('---')[0];
-		pagesComponents[componentName] = filename;
-	});
+const componentsJsFiles = {};
+
+if (!dev) {
+	if (fs.existsSync(jsPagesDir)) {
+		fs.readdirSync(jsPagesDir).forEach((filename) => {
+			const componentName = filename.split('---')[0];
+			componentsJsFiles[componentName] = filename;
+		});
+	}
 }
 
 
@@ -30,13 +33,32 @@ module.exports = (page, data) => {
 
 	let jsonData = data ? JSON.stringify(data) : '""';
 
+	let jsFilename;
+
+	// We only do this dynamically during dev since it's slow to read the disk
+	// on every request
+	if (dev) {
+		const jsFiles = fs.readdirSync(jsPagesDir);
+
+		for (const filename of jsFiles) {
+			if (filename.includes(page)) {
+				jsFilename = filename;
+				break;
+			}
+		}
+	} else {
+		// When runnnig the server in prod we already have figured out the filenames
+		// and we read those from memory
+		jsFilename = componentsJsFiles[page];
+	}
+
 	return `
 		<html>
 			<head>
 				<style>${css.code}</style>
 				${head}
 				<script type='module'>
-					import Page from '/js/pages/${pagesComponents[page]}';
+					import Page from '/js/pages/${jsFilename}';
 
 					new Page({
 						target: document.body,
