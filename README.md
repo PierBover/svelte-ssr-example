@@ -12,13 +12,13 @@ I was looking for an SSR example for Svelte but the only [one I could find](http
 I'm a Rollup and Svelte noob. Don't hesitate to open an issue if I did something wrong.
 
 ### How to dev?
-Run `npm run rollup-watch` and then on another terminal tab `npm run server-watch`. This is not very elegant but it's better than manually doing `npm run start` whenever you want to refresh a change...
+Run `npm run rollup-watch` and then on another terminal tab `npm run server-watch`. If you add a new file to `client/pages` you will need to restart Rollup's watch. I haven't found a way of having a config array and have it react on new file changes. This is not very elegant but it's better than manually doing `npm run start` whenever you want to refresh a change...
 
-You could also create a new NPM command on `package.json` like this:
+Instead of having two terminal tabs you could also create a new NPM command on `package.json` like this:
 ```
 "dev": "npm run rollup-watch & npm run server-watch"
 ```
-This would run those commands at the same time in parallel (note the single `&`). When you do `npm run dev` you will see lots of garbage messages because Nodemon will restart the server whenever Rollup bundles a new file.
+This would run those commands at the same time in parallel (note the single `&`). When you do `npm run dev` you will see lots of garbage messages because Nodemon will restart the server whenever Rollup bundles all pages.
 
 ### Why not Sapper?
 
