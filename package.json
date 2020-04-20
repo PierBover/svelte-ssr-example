@@ -41,7 +41,8 @@
   },
   "nodemonConfig": {
     "ignore": [
-      "server/components/*",
+      "components/*",
+      "scss/*",
       "server/ssr/*",
       "server/public/*"
     ],
