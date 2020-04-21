@@ -78,8 +78,6 @@ const clientSideInputs = entrypointsFiles.map(filename => {
 	}
 });
 
-console.log(clientSideInputs);
-
 clientSideInputs.forEach((entry) => {
 	rollupConfigs.push({
 		input: entry.input,

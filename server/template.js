@@ -3,6 +3,7 @@ const fs = require('fs');
 
 const dev = process.env.DEV === 'true';
 
+const ssrModulesDir = path.resolve(__dirname, 'ssr');
 const jsPagesDir = path.resolve(__dirname, 'public/js/pages');
 const cssPagesDir = path.resolve(__dirname, 'public/css/pages');
 const cssGlobalDir = path.resolve(__dirname, 'public/css/global');
@@ -15,31 +16,50 @@ const cssGlobalDir = path.resolve(__dirname, 'public/css/global');
 const componentsJsFiles = {};
 const componentsCssFiles = {};
 let globalCssFiles;
+let ssrModules = {};
 
+// preload stuff when not doing dev
 if (!dev) {
+	// get the client-side js files
 	fs.readdirSync(jsPagesDir).forEach((filename) => {
 		const componentName = filename.split('---')[0];
 		componentsJsFiles[componentName] = filename;
 	});
 
+	// get the css files for the pages
 	fs.readdirSync(cssPagesDir).forEach((filename) => {
 		const componentName = filename.split('---')[0];
 		componentsCssFiles[componentName] = filename;
 	});
 
+	// get the global css files
 	globalCssFiles = fs.readdirSync(cssGlobalDir).map(filename => filename);
+
+	// get the ssr modules
+	fs.readdirSync(ssrModulesDir).forEach((filename) => {
+		const componentName = filename.replace('.js', '');
+		ssrModules[componentName] = require(`./ssr/${filename}`);
+	});
 }
 
 
 module.exports = (page, data) => {
 
-	const {render} = require(`./ssr/${page}.js`);
+	let ssrModule;
+
+	if (dev) {
+		ssrmodule = require(`./ssr/${page}.js`);
+	} else {
+		ssrModule = ssrModules[page];
+	}
+
+
 
 	// 'html' is the SSR'd markup
 	// 'head' are some tags that go into the <head> so that Svelte can do hydration
 	// render() also returns 'css' but we don't need it here since Rollup has already
 	// generated the css files
-	const {html, head } = render(data);
+	const {html, head } = ssrModule.render(data);
 	let jsonData = data ? JSON.stringify(data) : '""';
 	let jsFilename, cssFilename;
 
