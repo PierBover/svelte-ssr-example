@@ -20,7 +20,12 @@ const preprocess = sveltePreprocess({
 });
 
 
-const pagesDir = path.join(__dirname, 'components/pages/');
+const pagesComponentsDir = path.join(__dirname, 'components/pages');
+
+// Since Rollup doesn't accept a string as code we need to create
+// each entry point on '/client-entrypoints'
+const entryPointsDir = path.join(__dirname, 'client-entrypoints');
+
 const ssrDir = path.join(__dirname, 'server/ssr');
 const clientJsPagesDir = path.join(__dirname, 'server/public/js/pages');
 const clientCssPagesDir = path.join(__dirname, 'server/public/css/pages');
@@ -31,67 +36,67 @@ rimraf.sync(ssrDir);
 rimraf.sync(clientJsPagesDir);
 rimraf.sync(clientCssPagesDir);
 
-// We generate an array of configs for Rollup with 2 configs per page component:
+// We generate 2 arrays of inputs for Rollup:
 // 1. CommonJS module for doing SSR on Node
-// 2. ES module for importing client-side and hydrating the SSR'd markup
-const rollupConfigs = [];
+// 2. JS file for for using client-side and hydrating the SSR'd markup
 
-const pagesComponentsFiles = fs.readdirSync(pagesDir);
-pagesComponentsFiles.forEach((filename) => {
+// SSR
+const pagesComponentsFiles = fs.readdirSync(pagesComponentsDir);
+const ssrInputs = pagesComponentsFiles.map(filename => path.join(pagesComponentsDir, filename));
 
-	// Ignore non .svelte files
-	if (!filename.includes('.svelte')) return;
+const ssrConfig = {
+	input: ssrInputs,
+	output: {
+		format: 'cjs',
+		dir: ssrDir,
+		entryFileNames: '[name].js'
+	},
+	plugins: [
+		svelte({
+			// Svelte compiler options:
+			// https://svelte.dev/docs#Compile_time
+			dev: false,
+			immutable: true,
+			generate: 'ssr',
+			hydratable: true,
+			preprocess
+		}),
+		resolve({
+			dedupe: ['svelte']
+		})
+	]
+};
 
-	// Remove the .svelte extension to be able to use the component name
-	const componentName = filename.replace('.svelte', '');
+const rollupConfigs = [ssrConfig];
 
-	// SSR component
+// Client entry points
+const entrypointsFiles = fs.readdirSync(entryPointsDir);
+const clientSideInputs = entrypointsFiles.map(filename => {
+	return {
+		input: path.join(entryPointsDir, filename),
+		name: filename.replace('.js', '')
+	}
+});
+
+console.log(clientSideInputs);
+
+clientSideInputs.forEach((entry) => {
 	rollupConfigs.push({
-		input: path.join(pagesDir, filename),
+		input: entry.input,
 		output: {
-			format: 'cjs',
-			file: path.join(ssrDir, componentName + '.js')
-		},
-		plugins: [
-			svelte({
-				// Svelte compiler options:
-				// https://svelte.dev/docs#Compile_time
-				dev: false,
-				immutable: true,
-				generate: 'ssr',
-				hydratable: true,
-				preprocess
-			}),
-			resolve({
-				dedupe: ['svelte']
-			})
-		]
-	});
-
-	// Client side component
-	rollupConfigs.push({
-		input: path.join(pagesDir, filename),
-		output: {
-			// We use esm to be able to import the component client-side
-			// eg: import Home from 'public/Home.js';
-			// Note that old browsers don't support modules
-			// https://caniuse.com/#feat=es6
-			format: 'esm',
+			format: 'iife',
 			dir: clientJsPagesDir,
 			// We add the hash to the filename so that whenever we update the site
 			// our users with cached .js files will only need to download the newer ones
-			// Note: that you cannot use the separator --- in your component filenames
+			// Note: that you cannot use the separator --- in your component filenames!
 			entryFileNames: '[name]---[hash].js'
 		},
 		plugins: [
 			svelte({
 				dev: false,
 				css: (css) => {
-					// We add the hash to the filename so that whenever we update the site
-					// our users with cached .css files will only need to download the newer ones
-					// Note: that you cannot use the separator --- in your component filenames
 					const hash = crypto.createHash('md5').update(css.code).digest("hex");
-					css.write(path.join(clientCssPagesDir, `${componentName}---${hash}.css`), false);
+					css.write(path.join(clientCssPagesDir, `${entry.name}---${hash}.css`), false);
 				},
 				hydratable: true,
 				preprocess
@@ -102,9 +107,9 @@ pagesComponentsFiles.forEach((filename) => {
 			}),
 			terser(),
 			// We need to delete the previous file, otherwise we will end up with multiple
-			// files with different hashes on dev time with rollup watch
+			// files with different hashes during dev
 			del({
-				targets: path.join(clientJsPagesDir, componentName + '*')
+				targets: path.join(clientJsPagesDir, entry.name + '*')
 			})
 		]
 	});

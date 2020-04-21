@@ -83,15 +83,10 @@ module.exports = (page, data) => {
 				${globalCssLinkTags}
 				<link rel="stylesheet" href="/css/pages/${cssFilename}" />
 				${head}
-				<script type='module'>
-					import Page from '/js/pages/${jsFilename}';
-
-					new Page({
-						target: document.body,
-						hydrate: true,
-						props: ${jsonData}
-					});
+				<script>
+					const SERVER_DATA = ${jsonData};
 				</script>
+				<script defer src="/js/pages/${jsFilename}"></script>
 			</head>
 			<body>
 				${html}
