@@ -45,7 +45,7 @@ fastify.route({
 	}
 });
 
-fastify.listen('8888', function (err, address) {
+fastify.listen(process.env.PORT || '8888', function (err, address) {
 	if (err) {
 		fastify.log.error(err)
 		process.exit(1)
