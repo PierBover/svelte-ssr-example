@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "description": "",
   "main": "server/index.js",
+  "engines": {
+    "node": "12.x"
+  },
   "scripts": {
     "scss-build": "node build-scss.js",
     "scss-watch": "chokidar \"scss/**/*.scss\" -c \"npm run scss-build\"",
