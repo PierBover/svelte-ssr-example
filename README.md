@@ -20,11 +20,11 @@ I was looking for an SSR example for Svelte but the only [one I could find](http
 I'm a Rollup and Svelte noob. Don't hesitate to open an issue if I did something wrong.
 
 ### How to dev?
-Run `npm run rollup-watch` and then `npm run server-watch` on another shell and then `npm run scss-watch` on another shell. Not very elegant but still better than manually doing `npm run start` whenever you want to refresh a change, is it not?
+Run `npm run rollup-watch` and then `npm run server-watch` on another shell. Not very elegant but still better than manually doing `npm run start` whenever you want to refresh a change, is it not?
 
 If you add a new file to `components/pages` you will need to restart Rollup's watch. I haven't found a way of making Rollup react to new files. If you know how please answer this [StackOverflow question](https://stackoverflow.com/questions/61316722/how-watch-for-new-files-in-rollup-with-an-array-of-configs)!
 
-Instead of having three terminal tabs you could create a new NPM command on `package.json` like this:
+Instead of having two terminal tabs you could create a new NPM command on `package.json` like this:
 ```
 "dev": "npm run rollup-watch & npm run scss-watch & npm run server-watch"
 ```

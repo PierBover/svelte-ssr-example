@@ -8,6 +8,7 @@ const resolve = require('@rollup/plugin-node-resolve');
 const {terser} = require('rollup-plugin-terser');
 const del = require('rollup-plugin-delete');
 const virtual = require('@rollup/plugin-virtual');
+const scss = require('rollup-plugin-scss');
 
 // SCSS
 const sveltePreprocess = require('svelte-preprocess');
@@ -25,16 +26,21 @@ const pagesComponentsDir = path.join(__dirname, 'components/pages');
 const ssrDir = path.join(__dirname, 'server/ssr');
 const staticJsPagesDir = path.join(__dirname, 'server/static/js/pages');
 const staticCssPagesDir = path.join(__dirname, 'server/static/css/pages');
+const staticCssGlobalDir = path.join(__dirname, 'server/static/css/global');
 
 // Delete the target directory in case there is some garbage left
 // from last dev session
 rimraf.sync(ssrDir);
 rimraf.sync(staticJsPagesDir);
 rimraf.sync(staticCssPagesDir);
+rimraf.sync(staticCssGlobalDir);
+
+fs.mkdirSync(staticCssGlobalDir);
 
 // For each page component we generate 2 rollup outputs:
 // 1. CommonJS module for doing SSR on Node
 // 2. JS file for for using client-side and hydrating the SSR'd markup
+const rollupConfigs = [];
 
 const pagesComponentsFiles = fs.readdirSync(pagesComponentsDir);
 
@@ -64,7 +70,7 @@ const ssrConfig = {
 	]
 };
 
-const rollupConfigs = [ssrConfig];
+rollupConfigs.push(ssrConfig);
 
 // Client entry points
 
@@ -129,5 +135,35 @@ clientSideConfigs.forEach((config) => {
 	});
 });
 
+// SCSS
+
+const scssConfig = {
+	input: 'scssVirtual',
+	output: {
+		file: './scss.js'
+	},
+	onwarn: (warning) => {
+		if (warning.code !== 'EMPTY_BUNDLE') console.log(warning.message);
+	},
+	plugins: [
+		virtual({
+			scssVirtual: `import '${path.join(__dirname,'scss/index.scss')}';`
+		}),
+		scss({
+			output (styles) {
+				const hash = crypto.createHash('md5').update(styles).digest("hex");
+				const outputPath = path.join(staticCssGlobalDir, `styles---${hash}.css`);
+				fs.writeFileSync(outputPath, styles, 'utf-8');
+			},
+			watch: path.join(__dirname,'scss')
+		}),
+		del({
+			targets: './scss.js',
+			hook: 'buildEnd'
+		})
+	]
+}
+
+rollupConfigs.push(scssConfig);
 
 module.exports = rollupConfigs;
