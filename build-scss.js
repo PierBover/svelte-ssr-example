@@ -4,7 +4,7 @@ const path = require('path');
 const crypto = require('crypto');
 const rimraf = require('rimraf');
 
-const outputDir = path.join(__dirname, 'server/public/css/global');
+const outputDir = path.join(__dirname, 'server/static/css/global');
 
 rimraf.sync(outputDir);
 fs.mkdirSync(outputDir);

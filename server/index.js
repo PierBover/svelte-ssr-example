@@ -16,7 +16,7 @@ const fastify = require('fastify')({
 fastify.register(require('fastify-compress'));
 
 fastify.register(require('fastify-static'), {
-	root: path.join(__dirname, 'public')
+	root: path.join(__dirname, 'static')
 });
 
 fastify.route({

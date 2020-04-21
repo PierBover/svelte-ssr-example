@@ -7,6 +7,7 @@ const svelte = require('rollup-plugin-svelte');
 const resolve = require('@rollup/plugin-node-resolve');
 const {terser} = require('rollup-plugin-terser');
 const del = require('rollup-plugin-delete');
+const virtual = require('@rollup/plugin-virtual');
 
 // SCSS
 const sveltePreprocess = require('svelte-preprocess');
@@ -21,27 +22,23 @@ const preprocess = sveltePreprocess({
 
 
 const pagesComponentsDir = path.join(__dirname, 'components/pages');
-
-// Since Rollup doesn't accept a string as code we need to create
-// each entry point on '/client-entrypoints'
-const entryPointsDir = path.join(__dirname, 'client-entrypoints');
-
 const ssrDir = path.join(__dirname, 'server/ssr');
-const clientJsPagesDir = path.join(__dirname, 'server/public/js/pages');
-const clientCssPagesDir = path.join(__dirname, 'server/public/css/pages');
+const staticJsPagesDir = path.join(__dirname, 'server/static/js/pages');
+const staticCssPagesDir = path.join(__dirname, 'server/static/css/pages');
 
 // Delete the target directory in case there is some garbage left
 // from last dev session
 rimraf.sync(ssrDir);
-rimraf.sync(clientJsPagesDir);
-rimraf.sync(clientCssPagesDir);
+rimraf.sync(staticJsPagesDir);
+rimraf.sync(staticCssPagesDir);
 
-// We generate 2 arrays of inputs for Rollup:
+// For each page component we generate 2 rollup outputs:
 // 1. CommonJS module for doing SSR on Node
 // 2. JS file for for using client-side and hydrating the SSR'd markup
 
-// SSR
 const pagesComponentsFiles = fs.readdirSync(pagesComponentsDir);
+
+// SSR
 const ssrInputs = pagesComponentsFiles.map(filename => path.join(pagesComponentsDir, filename));
 
 const ssrConfig = {
@@ -70,31 +67,50 @@ const ssrConfig = {
 const rollupConfigs = [ssrConfig];
 
 // Client entry points
-const entrypointsFiles = fs.readdirSync(entryPointsDir);
-const clientSideInputs = entrypointsFiles.map(filename => {
+
+const clientSideConfigs = pagesComponentsFiles.map(filename => {
+
+	const name = filename.replace('.svelte', '');
+
+	const code = `
+		import ${name} from '${path.join(pagesComponentsDir, filename)}';
+
+		new ${name}({
+			target: document.body,
+			hydrate: true,
+			props: SERVER_DATA
+		});
+	`;
+
 	return {
-		input: path.join(entryPointsDir, filename),
-		name: filename.replace('.js', '')
+		code,
+		name
 	}
 });
 
-clientSideInputs.forEach((entry) => {
+// For the client JS we need to pass Rollup an array since it doesn't support
+// an entry object for IIFE format
+
+clientSideConfigs.forEach((config) => {
 	rollupConfigs.push({
-		input: entry.input,
+		input: config.name,
 		output: {
 			format: 'iife',
-			dir: clientJsPagesDir,
+			dir: staticJsPagesDir,
 			// We add the hash to the filename so that whenever we update the site
 			// our users with cached .js files will only need to download the newer ones
 			// Note: that you cannot use the separator --- in your component filenames!
-			entryFileNames: '[name]---[hash].js'
+			entryFileNames: config.name + '---[hash].js'
 		},
 		plugins: [
+			virtual({
+				[config.name]: config.code
+			}),
 			svelte({
 				dev: false,
 				css: (css) => {
 					const hash = crypto.createHash('md5').update(css.code).digest("hex");
-					css.write(path.join(clientCssPagesDir, `${entry.name}---${hash}.css`), false);
+					css.write(path.join(staticCssPagesDir, `${config.name}---${hash}.css`), false);
 				},
 				hydratable: true,
 				preprocess
@@ -107,7 +123,7 @@ clientSideInputs.forEach((entry) => {
 			// We need to delete the previous file, otherwise we will end up with multiple
 			// files with different hashes during dev
 			del({
-				targets: path.join(clientJsPagesDir, entry.name + '*')
+				targets: path.join(staticJsPagesDir, config.name + '*')
 			})
 		]
 	});

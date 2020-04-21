@@ -4,9 +4,9 @@ const fs = require('fs');
 const dev = process.env.DEV === 'true';
 
 const ssrModulesDir = path.resolve(__dirname, 'ssr');
-const jsPagesDir = path.resolve(__dirname, 'public/js/pages');
-const cssPagesDir = path.resolve(__dirname, 'public/css/pages');
-const cssGlobalDir = path.resolve(__dirname, 'public/css/global');
+const jsPagesDir = path.resolve(__dirname, 'static/js/pages');
+const cssPagesDir = path.resolve(__dirname, 'static/css/pages');
+const cssGlobalDir = path.resolve(__dirname, 'static/css/global');
 
 // Since our components have hashes
 // eg: public/js/pages/Home---8f58e2d9.js
