@@ -48,12 +48,10 @@ module.exports = (page, data) => {
 	let ssrModule;
 
 	if (dev) {
-		ssrmodule = require(`./ssr/${page}.js`);
+		ssrModule = require(`./ssr/${page}.js`);
 	} else {
 		ssrModule = ssrModules[page];
 	}
-
-
 
 	// 'html' is the SSR'd markup
 	// 'head' are some tags that go into the <head> so that Svelte can do hydration
