@@ -9,6 +9,12 @@ Features:
 * Component SCSS (use `<style lang="scss">`)
 * Using Fastify but any Node server can be used
 
+See this running on Heroku: [https://svelte-ssr-test.herokuapp.com/](https://svelte-ssr-test.herokuapp.com/)
+
+(it's a free dyno, it may be asleep)
+
+### Intro
+
 I was looking for an SSR example for Svelte but the only [one I could find](https://github.com/domingues/svelte-ssr-example) seemed unnecessarily complicated. So I decided to create this example which I think is more educational.
 
 I'm a Rollup and Svelte noob. Don't hesitate to open an issue if I did something wrong.
