@@ -28,7 +28,7 @@
     "@rollup/plugin-virtual": "^2.0.1",
     "autoprefixer": "^9.7.6",
     "chokidar-cli": "^2.1.0",
-    "fastify": "^2.13.1",
+    "fastify": "^2.15.1",
     "fastify-compress": "^2.0.1",
     "fastify-static": "^2.6.0",
     "node-sass": "^4.13.1",
